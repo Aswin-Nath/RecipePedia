@@ -2,6 +2,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import "./IndividualDraftDisplayer.css";
 import Navbar from "../../Navbars/Navbar/Navbar";
+import apiClient from '../../../api/apiClient';
+import { API_ENDPOINTS } from '../../../api/endpoints';
 import axios from "axios";
 import { useUser } from "../../Contexts/ContextProvider";
 
@@ -43,8 +45,7 @@ const IndividualDraftDisplayer = () => {
 
   useEffect(() => {
     const fetchBlog = async () => {
-      const API = `https://recipepedia-blog-backend.onrender.com/api/blogs/${blog_id}`;
-      const response = await axios.get(API);
+      const response = await apiClient.get(API_ENDPOINTS.BLOGS.GET_BY_ID(blog_id));
       setblog(response.data.blog[0]);
       setReadtime(
         Math.ceil(response.data.blog[0].content.split(/\s+/).length / averageWPM)
@@ -105,7 +106,7 @@ const IndividualDraftDisplayer = () => {
     }
     setIsDeleting(true);
     try {
-      await axios.delete(`https://recipepedia-blog-backend.onrender.com/api/blogs/${blog_id}`);
+      await apiClient.delete(API_ENDPOINTS.BLOGS.DELETE(blog_id));
       navigate("/");
     } catch (error) {
       console.error("Error deleting blog:", error);
@@ -118,8 +119,7 @@ const IndividualDraftDisplayer = () => {
   useEffect(() => {
     const fetchImages = async () => {
       try {
-        const API = `https://recipepedia-blog-backend.onrender.com/api/get/blogs/images/${blog_id}`;
-        const response = await axios.get(API);
+        const response = await apiClient.get(API_ENDPOINTS.MEDIA.GET_IMAGES(blog_id));
         const urls = response.data.image_urls;
         setimage_url(urls);
       } catch (error) {
@@ -132,8 +132,7 @@ const IndividualDraftDisplayer = () => {
   useEffect(() => {
     const fetchVideos = async () => {
       try {
-        const API = `https://recipepedia-blog-backend.onrender.com/api/get/blogs/videos/${blog_id}`;
-        const response = await axios.get(API);
+        const response = await apiClient.get(API_ENDPOINTS.MEDIA.GET_VIDEOS(blog_id));
         const urls = response.data.video_url;
         setvideo_url(urls);
       } catch (error) {

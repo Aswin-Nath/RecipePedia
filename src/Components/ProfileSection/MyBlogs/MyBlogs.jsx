@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from "../../Navbars/Navbar/Navbar";
 import { useUser } from '../../Contexts/ContextProvider';
-import axios from 'axios';
+import apiClient from '../../../api/apiClient';
+import { API_ENDPOINTS } from '../../../api/endpoints';
 import IndividualHomeBlogDisplayer from '../../OutsideDisplayer/IndividualHomeBlogDisplayer/IndividualHomeBlogDisplayer';
 import './MyBlogs.css';
 
@@ -20,10 +21,8 @@ const MyBlogs = () => {
             return;
         }
         const fetchBlogs = async () => {
-            const API = "https://recipepedia-blog-backend.onrender.com/api/users/blogs";
-            // const API = "http://127.0.0.1:5000/api/users/blogs";
             try {
-                const response = await axios.get(API, { params: { userId } });
+                const response = await apiClient.get(API_ENDPOINTS.BLOGS.GET_BY_USER, { params: { userId } });
                 setblogs(response.data.blogs);
             }
             catch (error) {

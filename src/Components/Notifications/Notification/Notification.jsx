@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import apiClient from "../../../api/apiClient";
+import { API_ENDPOINTS } from "../../../api/endpoints";
 import axios from "axios";
 import "./Notification.css";
 import { useUser } from "../../Contexts/ContextProvider";
@@ -13,9 +15,7 @@ const Notification = () => {
   const fetchNotifications = async () => {
     setLoading(true);
     try {
-      const API1="http://127.0.0.1:5000/api/notifications/all";
-      const API2="https://recipepedia-blog-backend.onrender.com/api/notifications/all"
-      const res = await axios.get(API2, { params: { userId } });
+      const res = await apiClient.get(API_ENDPOINTS.NOTIFICATIONS.GET_ALL, { params: { userId } });
       const all = (res.data.notifications || []).map(n => ({ ...n, type: n.type }));
       all.sort((a, b) => new Date(b.notification_time) - new Date(a.notification_time));
       console.log(all,userId);
@@ -50,7 +50,7 @@ const Notification = () => {
   // Mark notification as read using the /read API (works for all types)
   const markAsRead = async (notification) => {
     try {
-      await axios.put("https://recipepedia-blog-backend.onrender.com/api/notifications/read", { notificationId: notification.notification_id,userId });
+      await apiClient.put(API_ENDPOINTS.NOTIFICATIONS.MARK_READ, { notificationId: notification.notification_id,userId });
       setNotifications((prev) =>
         prev.map((n) =>
           n.notification_id === notification.notification_id

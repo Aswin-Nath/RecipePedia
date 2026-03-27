@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import apiClient from '../../../api/apiClient';
+import { API_ENDPOINTS } from '../../../api/endpoints';
 import Navbar from "../../Navbars/Navbar/Navbar";
 import { useUser } from "../../Contexts/ContextProvider";
 import { useNavigate } from "react-router-dom";
@@ -30,8 +31,8 @@ const Network = () => {
   const fetchNetwork = async () => {
     try {
       const [resFollowers, resFollowing] = await Promise.all([
-        axios.get(`https://recipepedia-blog-backend.onrender.com/api/followers/${userId}`),
-        axios.get(`https://recipepedia-blog-backend.onrender.com/api/following/${userId}`),
+        apiClient.get(API_ENDPOINTS.NETWORK.GET_FOLLOWERS(userId)),
+        apiClient.get(API_ENDPOINTS.NETWORK.GET_FOLLOWING(userId)),
       ]);
       console.log(resFollowers.data);
       console.log(resFollowing.data);
@@ -48,7 +49,7 @@ const Network = () => {
 
   const handleRemoveFollower = async (followerId) => {
     try {
-      await axios.post("https://recipepedia-blog-backend.onrender.com/api/remove-follower", {
+      await apiClient.post(API_ENDPOINTS.NETWORK.REMOVE_FOLLOWER, {
         follower_id: followerId,
         user_id: userId,
       });
@@ -60,7 +61,7 @@ const Network = () => {
 
   const handleUnfollow = async (followingId) => {
     try {
-      await axios.post("https://recipepedia-blog-backend.onrender.com/api/unfollow", {
+      await apiClient.post(API_ENDPOINTS.NETWORK.UNFOLLOW, {
         follower_id: userId,
         following_id: followingId,
       });

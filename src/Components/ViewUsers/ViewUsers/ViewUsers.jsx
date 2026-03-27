@@ -1,7 +1,8 @@
 import { useParams } from "react-router-dom";
 import Navbar from "../../Navbars/Navbar/Navbar";
 import { useEffect, useState } from "react";
-import axios from "axios";
+import apiClient from '../../../api/apiClient';
+import { API_ENDPOINTS } from '../../../api/endpoints';
 import IndividualHomeBlogDisplayer from "../../OutsideDisplayer/IndividualHomeBlogDisplayer/IndividualHomeBlogDisplayer";
 // We can display his primary details and blogs that he has published and reactions of him other posts
 import { Avatar, Box, Typography, Paper, Grid, Divider, CircularProgress } from "@mui/material";
@@ -21,7 +22,7 @@ const ViewUsers=()=>{
     const [followStatus,setFollowStatus]=useState(false);
     const handleConnect = async (targetId) => {
         try {
-        await axios.post("https://recipepedia-blog-backend.onrender.com/api/connect", {
+        await apiClient.post(API_ENDPOINTS.NETWORK.CONNECT, {
             follower_id: userId,
             following_id: targetId,
         });
@@ -32,7 +33,7 @@ const ViewUsers=()=>{
     };
     const handleUnfollow = async (followingId) => {
         try {
-        await axios.post("https://recipepedia-blog-backend.onrender.com/api/unfollow", {
+        await apiClient.post(API_ENDPOINTS.NETWORK.UNFOLLOW, {
             follower_id: userId,
             following_id: followingId,
         });
@@ -44,9 +45,8 @@ const ViewUsers=()=>{
 
     useEffect(()=>{
         const fetchBlogs = async () => {
-            const API = "https://recipepedia-blog-backend.onrender.com/api/users/blogs";
             try {
-                const response = await axios.get(API, { params: { userId:target_user_id } });
+                const response = await apiClient.get(API_ENDPOINTS.BLOGS.GET_BY_USER, { params: { userId:target_user_id } });
                 setBlogs(response.data.blogs);
             }
             catch (error) {
@@ -55,11 +55,8 @@ const ViewUsers=()=>{
         }
         const fetchDetails = async () => {
         try {
-            const res = await axios.get("https://recipepedia-blog-backend.onrender.com/api/user-details", {
+            const res = await apiClient.get(API_ENDPOINTS.USER.GET_DETAILS, {
             params: { userId:target_user_id },
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
             });
             const user = res.data.details[0];
             setUserMail(user.user_mail);
@@ -78,9 +75,7 @@ const ViewUsers=()=>{
         const fetchNetwork = async () => {
             try {
                 console.log("called");
-            const API3=`http://127.0.0.1:5000/api/following/${userId}`
-            const API4=`https://recipepedia-blog-backend.onrender.com/api/following/${userId}`
-            const resFollowers = await axios.get(API3);
+            const resFollowers = await apiClient.get(API_ENDPOINTS.NETWORK.GET_FOLLOWING(userId));
             for(var who_are_following_target_user in resFollowers.data){
                 const current=resFollowers.data[who_are_following_target_user];
                 if(current.following_id==target_user_id){

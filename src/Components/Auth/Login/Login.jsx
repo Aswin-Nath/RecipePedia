@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import apiClient from "../../../api/apiClient";
+import { API_ENDPOINTS } from "../../../api/endpoints";
 import { useUser } from "../../Contexts/ContextProvider";
 import AuthNavbar from "../../Navbars/AuthNavbar/AuthNavbar";
 import { Card, CardContent, Typography, TextField, Button, Box } from "@mui/material";
@@ -31,17 +32,12 @@ const Login = () => {
             alert("Provide all the details");
             return;
         }
-        const API = "https://recipepedia-blog-backend.onrender.com/api/login";
         const data = {
             "detail": user_detail,
             "password": password
         }
         try {
-            const response = await axios.post(API, data, {
-                headers: {
-                    "Content-Type": "application/json"
-                }
-            });
+            const response = await apiClient.post(API_ENDPOINTS.AUTH.LOGIN, data);
 
             const user_id = response.data.id;
             const message = response.data.message;

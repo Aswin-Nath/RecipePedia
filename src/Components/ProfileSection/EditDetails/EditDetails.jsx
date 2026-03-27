@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import apiClient from '../../../api/apiClient';
+import { API_ENDPOINTS } from '../../../api/endpoints';
 import { useUser } from "../../Contexts/ContextProvider";
 import Navbar from "../../Navbars/Navbar/Navbar";
 import {
@@ -41,11 +42,8 @@ const EditProfile = () => {
 
     const fetchDetails = async () => {
       try {
-        const res = await axios.get("https://recipepedia-blog-backend.onrender.com/api/user-details", {
+        const res = await apiClient.get(API_ENDPOINTS.USER.GET_DETAILS, {
           params: { userId },
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
         });
         const user = res.data.details[0];
         setUserName(user.user_name);
@@ -97,8 +95,8 @@ const EditProfile = () => {
         uploadedUrl = await uploadProfileImage();
       }
 
-      await axios.post(
-        "https://recipepedia-blog-backend.onrender.com/api/update-user-details",
+      await apiClient.post(
+        API_ENDPOINTS.USER.UPDATE_DETAILS,
         {
           userId,
           user_name: userName,

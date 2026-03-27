@@ -1,6 +1,7 @@
 import Navbar from "../Navbars/Navbar/Navbar";
 import { useUser } from "../Contexts/ContextProvider";
-import axios from "axios";
+import apiClient from '../../api/apiClient';
+import { API_ENDPOINTS } from '../../api/endpoints';
 import { useEffect, useState } from "react";
 import IndividualHomeDisplayer from "../OutsideDisplayer/IndividualHomeBlogDisplayer/IndividualHomeBlogDisplayer";
 import { useNavigate } from "react-router-dom";
@@ -18,7 +19,7 @@ const Bookmarks = () => {
         }
         const fetchBookmarks=async ()=>{
             try{
-                const response=await axios.get("https://recipepedia-blog-backend.onrender.com/api/bookmarks",{params:{userId}});
+                const response=await apiClient.get(API_ENDPOINTS.ENGAGEMENT.GET_BOOKMARKS,{params:{userId}});
                 setbookmarks(response.data.bookmarks);
             }
             catch(error){

@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import "./Signup.css";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import apiClient from "../../../api/apiClient";
+import { API_ENDPOINTS } from "../../../api/endpoints";
 import { useUser } from "../../Contexts/ContextProvider";
 
 // Material UI imports
@@ -31,9 +32,8 @@ const Signup = () => {
             alert("Password length should be atleast 8");
             return;
         }
-        const API = "https://recipepedia-blog-backend.onrender.com/api/users/check";
         try {
-            const response = await axios.get(API, { params: { Username, Email } });
+            const response = await apiClient.get(API_ENDPOINTS.AUTH.CHECK_USER, { params: { Username, Email } });
             const mail_check = response.data.mail;
             const name_check = response.data.name;
             if (name_check) {
@@ -44,17 +44,12 @@ const Signup = () => {
                 alert("Email is already registered try with an alternate email");
                 return;
             }
-            const ADD_API = "https://recipepedia-blog-backend.onrender.com/api/signup";
             const data1 = {
                 "username": Username,
                 "email": Email,
                 "password": Password
             }
-            const insert_response = await axios.post(ADD_API, data1, {
-                headers: {
-                    "Content-Type": "application/json"
-                }
-            })
+            const insert_response = await apiClient.post(API_ENDPOINTS.AUTH.SIGNUP, data1)
             localStorage.setItem("token", insert_response.data.currentToken);
             login(insert_response.data.user_id);
             navigate("/home");

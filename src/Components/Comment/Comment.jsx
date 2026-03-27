@@ -1,4 +1,5 @@
-import axios from "axios";
+import apiClient from "../../api/apiClient";
+import { API_ENDPOINTS } from "../../api/endpoints";
 import React, { useState, useEffect } from "react";
 import "./Comment.css";
 import { useUser } from "../Contexts/ContextProvider";
@@ -25,10 +26,8 @@ const Comments = ({ blog_id, ownerId }) => {
 
   const handleDelete = async (comment_id) => {
     // Add your delete logic here
-    const API=`https://recipepedia-blog-backend.onrender.com/api/delete/comments/${comment_id}`;
-    // const API=`http://127.0.0.1:5000/api/delete/comments/${comment_id}/${blog_id}`;
     try{
-      await axios.delete(API);
+      await apiClient.delete(API_ENDPOINTS.COMMENTS.DELETE(comment_id));
     }
     catch(error){
       return alert("Error occured while deleting comment",error);
@@ -222,11 +221,9 @@ const Comments = ({ blog_id, ownerId }) => {
     if (!current_addcomment) {
       return alert("comment should contain at least 3 characters");
     }
-    const API1 = "https://recipepedia-blog-backend.onrender.com/api/add/comment";
-    const API2 = "http://127.0.0.1:5000/api/add/comment";
     try {
-      const result = await axios.post(
-        API1,
+      const result = await apiClient.post(
+        API_ENDPOINTS.COMMENTS.ADD,
         {
           blog_id,
           userId,
@@ -254,9 +251,8 @@ const Comments = ({ blog_id, ownerId }) => {
 
 const fetchComments = async () => {
     // const API=`http://127.0.0.1:5000/api/get/${blog_id}/comment`;
-      const API = `https://recipepedia-blog-backend.onrender.com/api/get/${blog_id}/comment`;
   try {
-    const response = await axios.get(API, { params: { blog_id } });
+    const response = await apiClient.get(API_ENDPOINTS.COMMENTS.GET_BY_BLOG(blog_id));
     const commentsData = response.data.message;
 
     let temParentData = [];
@@ -292,11 +288,10 @@ const fetchComments = async () => {
 
   useEffect(() => {
     const fetchComments = async () => {
-      const API1 = `https://recipepedia-blog-backend.onrender.com/api/get/${blog_id}/comment`;
-      const API2 = `http://127.0.0.1:5000/api/get/${blog_id}/comment`;
+      const API = `${import.meta.env.VITE_SERVER_URL}/get/${blog_id}/comment`;
 
       try {
-        const response = await axios.get(API1, { params: { blog_id } });
+        const response = await axios.get(API, { params: { blog_id } });
         const commentsData = response.data.message;
         console.log("Oombey",commentsData);
         let temParentData = [];
@@ -378,16 +373,9 @@ const fetchComments = async () => {
                   if (!reportReason) {
                     return alert("Provide the reason to report");
                   }
-                  const API =
-                    "https://recipepedia-blog-backend.onrender.com/api/post/report-comments";
-                  const data = {
-                    userId,
-                    blog_id,
-                    reportReason,
-                    comment_id: currentCommentId,
-                  };
                   try {
-                    await axios.post(API, data, {
+                    const currentDate = new Date().toLocaleString();
+                    await apiClient.post(API_ENDPOINTS.COMMENTS.REPORT, data, {
                       headers: { "Content-Type": "application/json" },
                     });
                     alert("Reported");

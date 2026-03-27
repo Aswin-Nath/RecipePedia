@@ -4,6 +4,8 @@ import "./IndividualBlogDisplayer.css";
 import Navbar from "../../Navbars/Navbar/Navbar";
 import Comment from "../../Comment/Comment";
 import axios from "axios";
+import apiClient from "../../../api/apiClient";
+import { API_ENDPOINTS } from "../../../api/endpoints";
 import { useUser } from "../../Contexts/ContextProvider";
 import Avatar from '@mui/material/Avatar'; // Add at the top if not present
 import { 
@@ -81,7 +83,7 @@ const IndividualBlogDisplayer = () => {
   useEffect(() => {
     const fetchBlog = async () => {
       const API1 = `http://127.0.0.1:5000/api/blogs/${blog_id}`;
-      const API2 = `https://recipepedia-blog-backend.onrender.com/api/blogs/${blog_id}`;
+      const API2 = `${import.meta.env.VITE_SERVER_URL}/blogs/${blog_id}`;
       const response = await axios.get(API2);
       setblog(response.data.blog);
       console.log(response.data.blog);
@@ -98,7 +100,7 @@ const IndividualBlogDisplayer = () => {
     // Fetch like status
     useEffect(() => {
       if (loading) return;
-      const API = "https://recipepedia-blog-backend.onrender.com/api/get/blogs/like_status";
+      const API = `${import.meta.env.VITE_SERVER_URL}/get/blogs/like_status`;
       const fetchLikeStatus = async () => {
         try {
           const response = await axios.get(API, { params:{userId, blog_id} });
@@ -110,7 +112,7 @@ const IndividualBlogDisplayer = () => {
         }
       };
       const fetchLikeCount = async () => {
-        const API = "https://recipepedia-blog-backend.onrender.com/api/get/blogs/likes_count";
+        const API = `${import.meta.env.VITE_SERVER_URL}/get/blogs/likes_count`;
         // const API="http://127.0.0.1:5000/api/get/blogs/likes_count";
         try {
           const response = await axios.get(API, {
@@ -141,7 +143,7 @@ const IndividualBlogDisplayer = () => {
     const data = { userId, blog_id: parseInt(blog_id) };
     try {
       const API1="http://127.0.0.1:5000/api/blogs/likes"
-      const API2="https://recipepedia-blog-backend.onrender.com/api/blogs/likes";
+      const API2=`${import.meta.env.VITE_SERVER_URL}/blogs/likes`;
         await axios.post(API2, data);
     } catch (error) {
       setlike_status(prevStatus); // rollback
@@ -154,7 +156,7 @@ const IndividualBlogDisplayer = () => {
   // Bookmarks: Check status on mount/user/blog change
   useEffect(() => {
     if (!userId || !blog_id) return;
-    const API = "https://recipepedia-blog-backend.onrender.com/api/bookmark-checker";
+    const API = `${import.meta.env.VITE_SERVER_URL}/bookmark-checker`;
     axios
       .get(API, { params: { user_id: userId, blog_id } })
       .then((res) => {
@@ -181,7 +183,7 @@ const IndividualBlogDisplayer = () => {
         blog_id: blog_id,
         condition: bookmarked
       };
-      const API = "https://recipepedia-blog-backend.onrender.com/api/add/bookmark";
+      const API = `${import.meta.env.VITE_SERVER_URL}/add/bookmark`;
       try {
         await axios.post(API, data, {
           headers: { "Content-Type": "application/json" }
@@ -230,7 +232,7 @@ const IndividualBlogDisplayer = () => {
   useEffect(() => {
     const fetchImages = async () => {
       try {
-        const API = `https://recipepedia-blog-backend.onrender.com/api/get/blogs/images/${blog_id}`;
+        const API = `${import.meta.env.VITE_SERVER_URL}/get/blogs/images/${blog_id}`;
         const response = await axios.get(API);
         setimage_url(response.data.image_urls);
       } catch (error) {
@@ -244,7 +246,7 @@ const IndividualBlogDisplayer = () => {
   useEffect(() => {
     const fetchVideos = async () => {
       try {
-        const API = `https://recipepedia-blog-backend.onrender.com/api/get/blogs/videos/${blog_id}`;
+        const API = `${import.meta.env.VITE_SERVER_URL}/get/blogs/videos/${blog_id}`;
         const response = await axios.get(API);
         setvideo_url(response.data.video_url);
       } catch (error) {
@@ -261,7 +263,7 @@ const IndividualBlogDisplayer = () => {
     }
     setIsDeleting(true);
     try {
-      await axios.delete(`https://recipepedia-blog-backend.onrender.com/api/blogs/${blog_id}`,{data:{userId}});
+      await axios.delete(`${import.meta.env.VITE_SERVER_URL}/blogs/${blog_id}`,{data:{userId}});
       navigate('/');
     } catch (error) {
       console.error("Error deleting blog:", error);
@@ -366,7 +368,7 @@ const IndividualBlogDisplayer = () => {
                     <div className="modal-actions">
                       <button
                         onClick={async () => {
-                          const API = "https://recipepedia-blog-backend.onrender.com/api/post/report-posts";
+                          const API = `${import.meta.env.VITE_SERVER_URL}/post/report-posts`;
                           const data = { userId, blog_id, reportReason };
                           try {
                             await axios.post(API, data, { headers: { 'Content-Type': "application/json" } });

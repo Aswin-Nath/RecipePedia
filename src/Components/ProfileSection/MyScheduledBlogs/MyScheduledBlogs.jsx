@@ -2,7 +2,8 @@ import Navbar from "../../Navbars/Navbar/Navbar";
 import "./MyScheduledBlogs.css";
 // import "../MyDrafts/MyDrafts/MyDrafts.css";
 
-import axios from "axios";
+import apiClient from '../../../api/apiClient';
+import { API_ENDPOINTS } from '../../../api/endpoints';
 import { useUser } from "../../Contexts/ContextProvider";
 import { useEffect, useState } from "react";
 // import IndividualHomeScheduledBlogDisplayer from "../IndividualHomeScheduledBlogDisplayer/IndividualScheduledBlogDisplayer";
@@ -17,9 +18,8 @@ const MyScheduledBlogs=()=>{
             return;
         }
         const fetchBlogs=async ()=>{
-            const API="https://recipepedia-blog-backend.onrender.com/api/get/scheduled_blogs";
             try{
-                const response=await axios.get(API,{params:{userId}});
+                const response=await apiClient.get(API_ENDPOINTS.BLOGS.GET_SCHEDULED,{params:{userId}});
                 setblogs(response.data.schedule_blogs);
             }
             catch(error){

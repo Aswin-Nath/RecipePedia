@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import apiClient from '../../../api/apiClient';
+import { API_ENDPOINTS } from '../../../api/endpoints';
 import CreateBlogNavbar from "../../Navbars/CreateBlogNavbar/CreateBlogNavbar";
 import { useUser } from '../../Contexts/ContextProvider';
 import Avatar from '@mui/material/Avatar'; // Add at the top if not present
@@ -60,7 +61,7 @@ const CreateBlog = () => {
         if (formData.images.length > 0) {
             imageUrls = await uploadImages();
         }
-        const blogResponse = await axios.post('https://recipepedia-blog-backend.onrender.com/api/blogs', {
+        const blogResponse = await apiClient.post(API_ENDPOINTS.BLOGS.CREATE, {
             title: formData.title.trim(),
             content: formData.content.trim(),
             user_id: userId,
@@ -74,16 +75,12 @@ const CreateBlog = () => {
                 : []),
             categories: formData.categories,
             type:"Hold",
-        },{
-            headers:{
-                Authorization:`Bearer ${token}`
-            }
         }
         );
         setblog_id(blogResponse.data.blog_id);
         if (imageUrls.length > 0) {
             await Promise.all(imageUrls.map(url=>
-                axios.post('https://recipepedia-blog-backend.onrender.com/api/blogs/images', {
+                apiClient.post(API_ENDPOINTS.MEDIA.UPLOAD_IMAGES, {
                     blog_id: blogResponse.data.blog_id,
                     image_url: url
                 })
@@ -91,14 +88,13 @@ const CreateBlog = () => {
         }
         if(videoUrl){
             try{
-                const API="https://recipepedia-blog-backend.onrender.com/api/blogs/videos";
-                axios.post(API,{blog_id:blogResponse.data.blog_id,video_url:videoUrl},{headers:{"Content-Type":"application/json"}});
+                apiClient.post(API_ENDPOINTS.MEDIA.UPLOAD_VIDEOS, {blog_id:blogResponse.data.blog_id,video_url:videoUrl});
             }
             catch(error){
                 console.log("error occured while adding",error.message);
             }
         }
-        await axios.post('https://recipepedia-blog-backend.onrender.com/api/post/schedule_blog', {
+        await apiClient.post(API_ENDPOINTS.BLOGS.SCHEDULE, {
                 blog_id:blogResponse.data.blog_id,
                 date: scheduledDate,
                 time: scheduledTime
@@ -124,8 +120,7 @@ const CreateBlog = () => {
     const fetchUsers = async (query) => {
         if (!query) return [];
         try {
-            const API=`https://recipepedia-blog-backend.onrender.com/api/users/search?q=${query}`;
-            const res = await axios.get(API);
+            const res = await apiClient.get(API_ENDPOINTS.USER.SEARCH(query));
             console.log(res.data.users);
             return res.data.users || [];
         } catch {
@@ -306,9 +301,7 @@ const removeVideo = () => {
             if (formData.images.length > 0) {
                 imageUrls = await uploadImages();
             }
-            const API1="http://127.0.0.1:5000/api/blogs";
-            const API2='https://recipepedia-blog-backend.onrender.com/api/blogs';
-            const blogResponse = await axios.post(API2, {
+            const blogResponse = await apiClient.post(API_ENDPOINTS.BLOGS.CREATE, {
                 title: formData.title.trim(),
                 content: formData.content.trim(),
                 user_id: userId,
@@ -317,16 +310,12 @@ const removeVideo = () => {
                 categories: formData.categories,
                 type:postType,
                 mentions
-            },{
-                headers:{
-                    Authorization:`Bearer ${token}`
-                }
             }
         );
             setblog_id(blogResponse.data.blog_id);
             if (imageUrls.length > 0) {
                 await Promise.all(imageUrls.map(url=>
-                    axios.post('https://recipepedia-blog-backend.onrender.com/api/blogs/images', {
+                    apiClient.post(API_ENDPOINTS.MEDIA.UPLOAD_IMAGES, {
                         blog_id: blogResponse.data.blog_id,
                         image_url: url
                     })
@@ -334,8 +323,7 @@ const removeVideo = () => {
             }
             if(videoUrl){
                 try{
-                    const API="https://recipepedia-blog-backend.onrender.com/api/blogs/videos";
-                    axios.post(API,{blog_id:blogResponse.data.blog_id,video_url:videoUrl},{headers:{"Content-Type":"application/json"}});
+                    apiClient.post(API_ENDPOINTS.MEDIA.UPLOAD_VIDEOS, {blog_id:blogResponse.data.blog_id,video_url:videoUrl});
                 }
                 catch(error){
                     console.log("error occured while adding",error.message);

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useUser } from "../../Contexts/ContextProvider";
-import axios from "axios";
+import apiClient from '../../../api/apiClient';
+import { API_ENDPOINTS } from '../../../api/endpoints';
 import './MyDrafts.css';
 // import IndividualDraftDisplayer from "../IndividualDraftDisplayer/IndividualDraftDisplayer";
 // import IndividualHomeDisplayer from "../IndividualHomeDraftDisplayer/IndividualHomeDraftDisplayer";
@@ -15,8 +16,7 @@ const MyDrafts=()=>{
         };
         const fetchDrafts=async ()=>{
             try{
-                const API="https://recipepedia-blog-backend.onrender.com/api/users/drafts";
-                const response=await axios.get(API,{params:{userId}});
+                const response=await apiClient.get(API_ENDPOINTS.BLOGS.GET_DRAFTS,{params:{userId}});
                 setDrafts(response.data.drafts);
             }
             catch(error){

@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from "../../Navbars/Navbar/Navbar";
 import './Profile.css'; 
 import { useUser } from '../../Contexts/ContextProvider';
-import axios from 'axios';
+import apiClient from '../../../api/apiClient';
+import { API_ENDPOINTS } from '../../../api/endpoints';
 
 import IndividualHomeBlogDisplayer from "../../OutsideDisplayer/IndividualHomeBlogDisplayer/IndividualHomeBlogDisplayer"
 import IndividualHomeDraftDisplayer from "../../OutsideDisplayer/IndividualHomeDraftDisplayer/IndividualHomeDraftDisplayer";
@@ -23,24 +24,22 @@ const Profile = () => {
     if (loading || !userId) return;
 
     const fetchBlogs = async () => {
-      const API1 = "https://recipepedia-blog-backend.onrender.com/api/users/blogs";
-      const API2 = "http://127.0.0.1:5000/api/users/blogs";
-      const res = await axios.get(API1, { params: { userId } });
+      const res = await apiClient.get(API_ENDPOINTS.BLOGS.GET_BY_USER, { params: { userId } });
       setBlogs(res.data.blogs || []);
     };
 
     const fetchDrafts = async () => {
-      const res = await axios.get("https://recipepedia-blog-backend.onrender.com/api/users/drafts", { params: { userId } });
+      const res = await apiClient.get(API_ENDPOINTS.BLOGS.GET_DRAFTS, { params: { userId } });
       setDrafts(res.data.drafts || []);
     };
 
     const fetchScheduled = async () => {
-      const res = await axios.get("https://recipepedia-blog-backend.onrender.com/api/get/scheduled_blogs", { params: { userId } });
+      const res = await apiClient.get(API_ENDPOINTS.BLOGS.GET_SCHEDULED, { params: { userId } });
       setScheduled(res.data.schedule_blogs || []);
     };
 
     const fetchBookmarks = async () => {
-      const res = await axios.get("https://recipepedia-blog-backend.onrender.com/api/bookmarks", { params: { userId } });
+      const res = await apiClient.get(API_ENDPOINTS.ENGAGEMENT.GET_BOOKMARKS, { params: { userId } });
       setBookmarks(res.data.bookmarks || []);
     };
 

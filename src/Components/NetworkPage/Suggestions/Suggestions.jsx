@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import apiClient from '../../../api/apiClient';
+import { API_ENDPOINTS } from '../../../api/endpoints';
 import { useUser } from "../../Contexts/ContextProvider";
 
 import {
@@ -24,7 +25,7 @@ const Suggestions = () => {
   const navigate=useNavigate();
   const fetchSuggestions = async () => {
     try {
-      const res = await axios.get(`https://recipepedia-blog-backend.onrender.com/api/suggestions/${userId}`);
+      const res = await apiClient.get(API_ENDPOINTS.NETWORK.GET_SUGGESTIONS(userId));
       setSuggestions(res.data);
     } catch (err) {
       console.error("Failed to fetch suggestions", err);
@@ -39,7 +40,7 @@ const Suggestions = () => {
 
   const handleConnect = async (targetId) => {
     try {
-      await axios.post("https://recipepedia-blog-backend.onrender.com/api/connect", {
+      await apiClient.post(API_ENDPOINTS.NETWORK.CONNECT, {
         follower_id: userId,
         following_id: targetId,
       });

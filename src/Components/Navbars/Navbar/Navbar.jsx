@@ -3,6 +3,8 @@ import "./Navbar.css";
 import { useState, useEffect, useRef } from "react";
 import { useUser } from "../../Contexts/ContextProvider";
 import Notification from "../../Notifications/Notification/Notification";
+import apiClient from "../../../api/apiClient";
+import { API_ENDPOINTS } from "../../../api/endpoints";
 import axios from "axios";
 import socket from "../../Sockets/SocketConnect";
 
@@ -18,7 +20,7 @@ const Navbar = () => {
     const fetchUnreadCount = async () => {
         if (!userId) return;
         try {
-            const res = await axios.get("https://recipepedia-blog-backend.onrender.com/api/notifications/all", { params: { userId } });
+            const res = await apiClient.get(API_ENDPOINTS.NOTIFICATIONS.GET_ALL, { params: { userId } });
             const notifications = res.data.notifications || [];
             const count = notifications.filter(n => !n.is_read).length;
             setUnreadCount(count);

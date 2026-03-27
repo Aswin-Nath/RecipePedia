@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { data, useNavigate, useParams } from 'react-router-dom';
-import axios from 'axios';
+import apiClient from '../../../api/apiClient';
+import { API_ENDPOINTS } from '../../../api/endpoints';
 import CreateBlogNavbar from "../../Navbars/CreateBlogNavbar/CreateBlogNavbar";
 import Avatar from '@mui/material/Avatar'; // Add at the top if not present
 
@@ -50,9 +51,7 @@ const EditBlog = () => {
     const fetchUsers = async (query) => {
         if (!query) return [];
         try {
-            const API1=`http://127.0.0.1:5000/api/users/search?q=${query}`;
-            const API2=`https://recipepedia-blog-backend.onrender.com/api/users/search?q=${query}`;
-            const res = await axios.get(API2);
+            const res = await apiClient.get(API_ENDPOINTS.USER.SEARCH(query));
             console.log(res.data.users);
             return res.data.users || [];
         } catch {
@@ -90,7 +89,7 @@ const EditBlog = () => {
             if (scheduledDate && scheduledTime) {
                 try {
                     
-                    await axios.post('https://recipepedia-blog-backend.onrender.com/api/post/schedule_blog', {
+                    await apiClient.post(API_ENDPOINTS.BLOGS.SCHEDULE, {
                             blog_id,
                             date: scheduledDate,
                             time: scheduledTime
@@ -107,8 +106,7 @@ const EditBlog = () => {
       useEffect(()=>{
     const fetchImages= async ()=>{
       try{
-        const API=`https://recipepedia-blog-backend.onrender.com/api/get/blogs/images/${blog_id}`;
-        const response=await axios.get(API);
+        const response=await apiClient.get(API_ENDPOINTS.MEDIA.GET_IMAGES(blog_id));
         const urls=response.data.image_urls;
         set_image_urls(urls);
       }
@@ -122,8 +120,7 @@ const EditBlog = () => {
   useEffect(()=>{
     const fetchVideos=async ()=>{
       try{
-        const API=`https://recipepedia-blog-backend.onrender.com/api/get/blogs/videos/${blog_id}`;
-        const response=await axios.get(API);
+        const response=await apiClient.get(API_ENDPOINTS.MEDIA.GET_VIDEOS(blog_id));
 
         const urls=response.data.video_url;
         if(response?.data?.video_url?.[0]?.length>0){
@@ -141,15 +138,13 @@ const EditBlog = () => {
         const fetchBlogData=async ()=>{
             try{
 
-                const API1=`https://recipepedia-blog-backend.onrender.com/api/blogs/${blog_id}`;
-                const API2=`http://127.0.0.1:5000/api/blogs/${blog_id}`;
-                const response=await axios.get(API1);
+                const response=await apiClient.get(API_ENDPOINTS.BLOGS.GET_BY_ID(blog_id));
                 setBlog(response.data.blog);
                 console.log(response.data.blog);
                 console.log(response.data.mentions);
                 setMentions(response.data.mentions);
                 if(response.data.blog.status=="Hold"){
-                    const time_date_response=await axios.get("https://recipepedia-blog-backend.onrender.com/api/get/scheduled_time",{params:{blog_id}});
+                    const time_date_response=await apiClient.get(API_ENDPOINTS.BLOGS.GET_SCHEDULED_TIME, {params:{blog_id}});
                     setdate(time_date_response.data.date);
                     settime(time_date_response.data.time);
                 }
@@ -341,9 +336,7 @@ const handleSubmit = async (e,athu) => {
 
 
     try {
-        const API1="http://127.0.0.1:5000/api/blogs/";
-        const API2="https://recipepedia-blog-backend.onrender.com/api/blogs/";
-        await axios.put(`${API2}${blog.blog_id}`, {
+        await apiClient.put(API_ENDPOINTS.BLOGS.UPDATE(blog.blog_id), {
             title: formData.title.trim(),
             content: formData.content.trim(),
             difficulty: formData.difficulty,
@@ -361,25 +354,23 @@ const handleSubmit = async (e,athu) => {
 
         let imageUrls = [];
         if(delete_image_id.length>0){
-            const API="https://recipepedia-blog-backend.onrender.com/api/edit/blogs/images";
-            await axios.put(API,{delete_image_id});
+            await apiClient.put(API_ENDPOINTS.MEDIA.EDIT_IMAGES, {delete_image_id});
         }
         if (formData.images.length > 0) {
             imageUrls = await uploadImages();
             
             await Promise.all(imageUrls.map(url => 
-                axios.post('https://recipepedia-blog-backend.onrender.com/api/blogs/images', {
+                apiClient.post(API_ENDPOINTS.MEDIA.UPLOAD_IMAGES, {
                     blog_id: blog.blog_id,
                     image_url: url
                 })
             ));
         }
         if(delete_video){
-            await  axios.put("https://recipepedia-blog-backend.onrender.com/api/edit/blogs/videos",{blog_id});
+            await  apiClient.put(API_ENDPOINTS.MEDIA.EDIT_VIDEOS, {blog_id});
         }
         if(videoUrl){
-            const API="https://recipepedia-blog-backend.onrender.com/api/blogs/videos";
-            await axios.post(API,{blog_id:blog_id,video_url:videoUrl},{headers:{"Content-Type":"application/json"}});
+            await apiClient.post(API_ENDPOINTS.MEDIA.UPLOAD_VIDEOS, {blog_id:blog_id,video_url:videoUrl});
         }
         setSuccessMessage('Recipe updated successfully!');
         setTimeout(() => {

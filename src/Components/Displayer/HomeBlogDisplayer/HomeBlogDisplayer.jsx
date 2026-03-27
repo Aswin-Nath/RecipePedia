@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import axios from "axios";
+import apiClient from "../../../api/apiClient";
+import { API_ENDPOINTS } from '../../../api/endpoints';
 import IndividualHomeBlogDisplayer from "../../OutsideDisplayer/IndividualHomeBlogDisplayer/IndividualHomeBlogDisplayer";
 import "./HomeBlogDisplayer.css";
 
@@ -16,12 +17,10 @@ const HomeBlog = () => {
   const [searchContent, setContent] = useState(defaultSearch);
 
   const fetchBlogs = async () => {
-    const API = `https://recipepedia-blog-backend.onrender.com/api/get/blogs${
-      searchContent.trim() ? `?search=${encodeURIComponent(searchContent)}` : ""
-    }`;
-
     try {
-      const response = await axios.get(API);
+      const response = await apiClient.get(`${API_ENDPOINTS.BLOGS.GET_ALL}${
+        searchContent.trim() ? `?search=${encodeURIComponent(searchContent)}` : ""
+      }`);
       setBlogs(response.data.message);
     } catch (error) {
       alert("Error occurred: " + error.message);
