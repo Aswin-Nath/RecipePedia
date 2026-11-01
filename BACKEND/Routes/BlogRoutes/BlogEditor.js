@@ -3,7 +3,6 @@ const express = require("express");
 const router = express.Router();
 
 const sql = require("../../Configs/db");
-const Redisclient = require("../../Redis/RedisClient");
 const { UserSockets } = require("../../Sockets/Sockets"); // Added for socket notifications
 
 router.put("/edit/blogs/images/", async (req, res) => {
@@ -68,12 +67,6 @@ router.put("/blogs/:blog_id", async (req, res) => {
       return res.status(404).json({ error: "Blog not found" });
     }
 
-    // Invalidate cache
-    const keyUserBlogs = `user_blogs#${userId}`;
-    const keyBlog = `blog#${blog_id}`;
-    await Redisclient.del(keyUserBlogs);
-    await Redisclient.del(keyBlog);
-
     // Update blog content
     const result = await sql`
       UPDATE blogs
@@ -133,7 +126,6 @@ router.put("/blogs/:blog_id", async (req, res) => {
         INSERT INTO notifications (user_id, type, blog_id, follower_id, is_read, notification_time)
         VALUES (${m.id}, 'blog_mention', ${blog_id}, ${userId}, false, NOW())
       `;
-      await Redisclient.del(`notifications#${m.id}`);
       const mentionedSocket = UserSockets.get(m.id);
       console.log(mentionedSocket);
       if (mentionedSocket) {
@@ -171,11 +163,6 @@ router.delete("/blogs/:blog_id", async (req, res) => {
     if (!result || result.length === 0) {
       return res.status(404).json({ error: "Blog not found" });
     }
-    const Key1=`user_blogs#${userId}`
-    const key2=`blog#${blog_id}`
-    await Redisclient.del(key2);
-    await Redisclient.del(Key1);
-    console.log("deleted",Key1,key2);
     res.json({
       message: "Blog and all related content deleted successfully",
       deletedBlog: result[0]

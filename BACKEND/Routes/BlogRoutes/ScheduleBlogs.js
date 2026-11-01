@@ -3,9 +3,8 @@ const express = require("express");
 const router = express.Router();
 
 const sql = require("../../Configs/db");
-const Redisclient = require("../../Redis/RedisClient");
 
-// GET scheduled blogs (no cache, user-specific)
+// GET scheduled blogs (user-specific)
 
 router.get("/get/scheduled_blogs/", async (req, res) => {
   try {
@@ -43,16 +42,10 @@ router.get("/get/scheduled_blogs/", async (req, res) => {
   }
 });
 
-// GET single scheduled blog (cache)
+// GET single scheduled blog
 router.get("/get/scheduled_blog/", async (req, res) => {
   try {
     const { blog_id } = req.query;
-    const cacheKey = `scheduled_blog#${blog_id}`;
-    const cached = await Redisclient.get(cacheKey);
-    if (cached) {
-      return res.status(200).json({ message: "success", scheduled_blog: JSON.parse(cached) });
-    }
-
     const blogs = await sql`
       SELECT * FROM blogs WHERE blog_id = ${blog_id}
     `;
@@ -69,7 +62,6 @@ router.get("/get/scheduled_blog/", async (req, res) => {
       blog.time = schedule.time;
     }
 
-    await Redisclient.set(cacheKey, JSON.stringify(blog));
     return res.status(200).json({ message: "success", scheduled_blog: blog });
 
   } catch (error) {
@@ -78,16 +70,10 @@ router.get("/get/scheduled_blog/", async (req, res) => {
   }
 });
 
-// GET scheduled time (cache)
+// GET scheduled time
 router.get("/get/scheduled_time", async (req, res) => {
   try {
     const { blog_id } = req.query;
-    const cacheKey = `scheduled_time#${blog_id}`;
-    const cached = await Redisclient.get(cacheKey);
-    if (cached) {
-      const schedule = JSON.parse(cached);
-      return res.status(200).json({ time: schedule.time, date: schedule.date });
-    }
     const result = await sql`
       SELECT * FROM scheduled_blogs WHERE blog_id = ${blog_id}
     `;
@@ -95,7 +81,6 @@ router.get("/get/scheduled_time", async (req, res) => {
     if (!schedule) {
       return res.status(404).json({ message: "Schedule not found" });
     }
-    await Redisclient.set(cacheKey, JSON.stringify(schedule));
     return res.status(200).json({ time: schedule.time, date: schedule.date });
   }
   catch (error) {
@@ -104,7 +89,7 @@ router.get("/get/scheduled_time", async (req, res) => {
   }
 });
 
-// POST schedule blog (invalidate cache)
+// POST schedule blog
 router.post("/post/schedule_blog", async (req, res) => {
   const { blog_id, date, time } = req.body;
 
@@ -120,10 +105,6 @@ router.post("/post/schedule_blog", async (req, res) => {
       DO UPDATE SET date = EXCLUDED.date, time = EXCLUDED.time
       RETURNING schedule_id
     `;
-    // Invalidate caches
-    await Redisclient.del(`scheduled_blog#${blog_id}`);
-    await Redisclient.del(`scheduled_time#${blog_id}`);
-
     return res.status(201).json({
       message: "Blog scheduled successfully",
       schedule_id: result[0].schedule_id

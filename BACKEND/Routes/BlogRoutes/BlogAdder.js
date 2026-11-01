@@ -6,7 +6,6 @@ const sql = require("../../Configs/db");
 
 const { postBlogLimiter } = require("../../Middleware/rateLimiters");
 const { AuthVerify } = require("../../Middleware/auth");
-const Redisclient = require("../../Redis/RedisClient");
 const { UserSockets } = require("../../Sockets/Sockets"); // Added for socket notifications
 
 router.post("/blogs/images", async (req, res) => {
@@ -67,7 +66,6 @@ router.post("/blogs", postBlogLimiter, AuthVerify, async (req, res) => {
                 `;
                 // Notify mentioned user if online
                 const mentionedSocket = UserSockets.get(m.id);
-                await Redisclient.del(`notifications#${m.id}`);
                 await sql`
                 INSERT INTO notifications (user_id, type, blog_id, follower_id, is_read, notification_time)
                 VALUES (${m.id}, 'blog_mention', ${blog_id}, ${user_id}, false, NOW())
@@ -81,8 +79,6 @@ router.post("/blogs", postBlogLimiter, AuthVerify, async (req, res) => {
                 }
             }
         }
-
-        await Redisclient.del(`user_blogs#${user_id}`);
 
         return res.status(201).json({
             message: "Blog created successfully",

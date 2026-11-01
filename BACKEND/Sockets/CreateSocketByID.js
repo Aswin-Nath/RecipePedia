@@ -25,7 +25,7 @@ io.on("connection",(socket)=>{
 
     console.log(`successfully backend socket connected for used ${userId}`)
 
-    io.on("disconnect",()=>{
+    socket.on("disconnect",()=>{
         UserSockets.delete(userId);
         console.log(`user ${userId} disconnected `);
     })

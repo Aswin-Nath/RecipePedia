@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 const { UserSockets } = require("../../Sockets/Sockets");
 const sql = require("../../Configs/db");
-const Redisclient = require("../../Redis/RedisClient");
 
 // 1. Get people you may want to follow
 router.get("/suggestions/:id", async (req, res) => {
@@ -42,10 +41,6 @@ router.post("/connect", async (req, res) => {
     await sql`
       INSERT INTO notifications (user_id, type, follower_id) VALUES (${following_id}, 'follow', ${follower_id})
     `;
-    await Redisclient.del(`notifications#${following_id}`);
-    // Invalidate followers and following cache
-    await Redisclient.del(`followers#${following_id}`);
-    await Redisclient.del(`following#${follower_id}`);
     const ownerSocket = UserSockets.get(following_id);
     if (ownerSocket) {
       ownerSocket.emit("notify", {
@@ -61,22 +56,15 @@ router.post("/connect", async (req, res) => {
 
 
 // 3. Get followers of a user
-// cached
 router.get("/followers/:id", async (req, res) => {
   const userId = req.params.id;
-  const cacheKey = `followers#${userId}`;
   try {
-    const cached = await Redisclient.get(cacheKey);
-    if (cached) {
-      return res.json(JSON.parse(cached));
-    }
     const result = await sql`
       SELECT *
       FROM follows f
       JOIN users u ON f.follower_id = u.user_id
       WHERE f.following_id = ${userId}
     `;
-    await Redisclient.set(cacheKey, JSON.stringify(result));
     res.json(result);
   } catch (err) {
     console.error("Error fetching followers:", err);
@@ -85,22 +73,15 @@ router.get("/followers/:id", async (req, res) => {
 });
 
 // 4. Get people the user is following
-// Cached
 router.get("/following/:id", async (req, res) => {
   const userId = req.params.id;
-  const cacheKey = `following#${userId}`;
   try {
-    const cached = await Redisclient.get(cacheKey);
-    if (cached) {
-      return res.json(JSON.parse(cached));
-    }
     const result = await sql`
       SELECT *
       FROM follows f
       JOIN users u ON f.following_id = u.user_id
       WHERE f.follower_id = ${userId}
     `;
-    await Redisclient.set(cacheKey, JSON.stringify(result));
     res.json(result);
   } catch (err) {
     console.error("Error fetching following:", err);
@@ -126,9 +107,6 @@ router.post("/remove-follower", async (req, res) => {
     await sql`
       DELETE FROM notifications WHERE type = 'follow' AND user_id = ${user_id} AND follower_id = ${follower_id}
     `;
-    // Invalidate followers and following cache
-    await Redisclient.del(`followers#${user_id}`);
-    await Redisclient.del(`following#${follower_id}`);
     res.json({ message: "Follower removed and notification deleted" });
   } catch (err) {
     console.error("Error removing follower:", err);
@@ -149,9 +127,6 @@ router.post("/unfollow", async (req, res) => {
     await sql`
       DELETE FROM notifications WHERE type = 'follow' AND user_id = ${following_id} AND follower_id = ${follower_id}
     `;
-    // Invalidate followers and following cache
-    await Redisclient.del(`followers#${following_id}`);
-    await Redisclient.del(`following#${follower_id}`);
     res.json({ message: "Unfollowed and notification deleted" });
   } catch (err) {
     console.error("Error unfollowing:", err);
