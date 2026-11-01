@@ -52,7 +52,7 @@ const Comments = ({ blog_id, ownerId }) => {
     ).padStart(2, "0")}`;
 
     delete currentComment.createdat;
-    if (currentComment.parent_id === currentComment.comment_id) {
+    if (currentComment.parent_id == null || currentComment.parent_id === currentComment.comment_id) {
       setParentData((prev) => {
         if (prev.some((c) => c.comment_id === currentComment.comment_id))
           return prev;
@@ -267,7 +267,7 @@ const fetchComments = async () => {
       currentComment.time = currentComment.createdat.slice(11, 16);
       delete currentComment.createdat;
 
-      if (parent_id === currentComment.comment_id) {
+      if (parent_id == null || parent_id === currentComment.comment_id) {
         temParentData.push(currentComment);
       } else {
         if (!temParent_to_child.has(parent_id)) {
@@ -301,7 +301,7 @@ const fetchComments = async () => {
           currentComment.time = currentComment.createdat.slice(11, 16);
           delete currentComment.createdat;
 
-          if (currentComment.parent_id === currentComment.comment_id) {
+          if (currentComment.parent_id == null || currentComment.parent_id === currentComment.comment_id) {
             temParentData.push(currentComment);
           } else {
             if (!temParent_to_child.has(parent_id)) {
