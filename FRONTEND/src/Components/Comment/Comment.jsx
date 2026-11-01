@@ -288,10 +288,8 @@ const fetchComments = async () => {
 
   useEffect(() => {
     const fetchComments = async () => {
-      const API = `${import.meta.env.VITE_SERVER_URL}/get/${blog_id}/comment`;
-
       try {
-        const response = await axios.get(API, { params: { blog_id } });
+        const response = await apiClient.get(API_ENDPOINTS.COMMENTS.GET_BY_BLOG(blog_id));
         const commentsData = response.data.message;
         console.log("Oombey",commentsData);
         let temParentData = [];
